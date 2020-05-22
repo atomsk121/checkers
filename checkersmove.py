@@ -4,7 +4,9 @@ from typing import List
 class CheckersMove:
     def __init__(self, move: List[int]):
         if len(move) != 4:
-            raise IllegalMoveException
+            raise IllegalMoveException(f"Can't createa Move: Expected 4 arguments, got{len(move)} arguments instead")
+        for coordinate in move:
+            int(coordinate)
         self.source = (move[0], move[1])
         self.target = (move[2], move[3])
 

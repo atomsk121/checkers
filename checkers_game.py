@@ -10,14 +10,15 @@ class CheckersGame:
     FIRST_TURN = TeamEnum.white
     SECOND_TURN = TeamEnum.black
 
-    def __init__(self, board: CheckerBoard):
+    def __init__(self, board: CheckerBoard, skip_scan_for_pieces_that_can_capture: bool=False):
         self.board = board #TODO CHECK IF PRESET BOARD HAS PIECES THAT CAN BE CAPTURED
         self.game_status = GameStatusEnum.game_continues
         self.current_team = self.FIRST_TURN
         self.other_team = self.SECOND_TURN
         self.possible_capture_moves: Dict[TeamEnum, List[CheckersMove]] = {TeamEnum.white: [], TeamEnum.black: []}
         self.multiple_capture_possibilities = []
-        self.record_pieces_that_can_capture()
+        if not skip_scan_for_pieces_that_can_capture:
+            self.scan_and_record_pieces_that_can_capture()
 
     def switch_team_turn(self):
         if self.current_team == TeamEnum.white:
@@ -36,38 +37,38 @@ class CheckersGame:
         self._game_status = status
 
     def is_move_inside_board(self, move: CheckersMove) -> bool:
-        # todo check dimensions
         if not ((0 <= move.source[ROW_INDEX] < self.board.height) and (0 <= move.source[COLUMN_INDEX] < self.board.length)):
-            return True
+            return False
         if not ((0 <= move.target[ROW_INDEX] < self.board.height) and (0 <= move.target[COLUMN_INDEX] < self.board.length)):
-            return True
-        return False
-
-    def find_move_type(self, move: CheckersMove) -> MoveTypeEnum:
-        if abs(move.source[1] - move.target[1]) == 1:
-            return MoveTypeEnum.regular_move
-        if abs(move.source[1] - move.target[1]) == 2:
-            return MoveTypeEnum.capture
-
-    @staticmethod
-    def check_move_is_diagonal(move: CheckersMove):
-        return abs(move.source[1] - move.target[1]) == abs(move.source[0] - move.target[0])
-
-    def check_if_target_is_empty(self, move: CheckersMove) -> bool:
-        if self.board[move.target] is not None:
             return False
         return True
 
-    def check_if_source_is_correct_color(self, move: CheckersMove, team: TeamEnum) -> bool:
+    @staticmethod
+    def find_move_type(move: CheckersMove) -> MoveTypeEnum:
+        if abs(move.source[ROW_INDEX] - move.target[ROW_INDEX]) == 1 and abs(move.source[COLUMN_INDEX] - move.target[COLUMN_INDEX]) == 1 :
+            return MoveTypeEnum.regular_move
+        if abs(move.source[ROW_INDEX] - move.target[ROW_INDEX]) == 2 and abs(move.source[COLUMN_INDEX] - move.target[COLUMN_INDEX]) == 2:
+            return MoveTypeEnum.capture
+        return MoveTypeEnum.illegal_move
+
+    @staticmethod
+    def verify_move_is_diagonal(move: CheckersMove):
+        return abs(move.source[1] - move.target[1]) == abs(move.source[0] - move.target[0])
+
+    def verify_target_is_empty(self, move: CheckersMove) -> bool:
+        return self.board[move.target] is None
+
+    def verify_source_is_correct_color(self, move: CheckersMove, team: TeamEnum) -> bool:
         return self.board[move.source] and self.board[move.source].team is team
 
 
     @staticmethod
-    def check_correct_move_direction(move: CheckersMove, team: TeamEnum):
+    def verify_correct_move_direction(move: CheckersMove, team: TeamEnum):
         return (move.target[ROW_INDEX] - move.source[ROW_INDEX]) * team.value > 0
 
     @staticmethod
     def verify_move_distance_is_valid(move: CheckersMove):
+        #TODO ADD TESTS FROM HERE
         return abs(move.target[ROW_INDEX] - move.source[ROW_INDEX]) <= 2
 
     @staticmethod
@@ -87,15 +88,15 @@ class CheckersGame:
     def check_if_move_is_valid(self, move: CheckersMove, team: TeamEnum = None):
         if team is None:
             team = self.current_team
-        if self.is_move_inside_board(move):
+        if not self.is_move_inside_board(move):
             raise IllegalMoveException()
-        if not self.check_if_target_is_empty(move):
+        if not self.verify_target_is_empty(move):
             raise IllegalMoveException()
-        if not self.check_if_source_is_correct_color(move, team):
+        if not self.verify_source_is_correct_color(move, team):
             raise IllegalMoveException()
-        if not self.check_move_is_diagonal(move):
+        if not self.verify_move_is_diagonal(move):
             raise IllegalMoveException()
-        if not self.check_correct_move_direction(move, team):
+        if not self.verify_correct_move_direction(move, team):
             raise IllegalMoveException()
         if not self.verify_move_distance_is_valid(move):
             raise IllegalMoveException()
@@ -215,7 +216,7 @@ class CheckersGame:
         else:
             return False
 
-    def record_pieces_that_can_capture(self):
+    def scan_and_record_pieces_that_can_capture(self):
         #TODO TEST THIS
         for coordinates in self.board.active_pieces:
             team = self.board[coordinates[COLUMN_INDEX], coordinates[ROW_INDEX]].team

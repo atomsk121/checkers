@@ -25,11 +25,11 @@ class Board:
     def __init__(self, board_length: int, board_height: int):
         self.length = board_length
         self.height = board_height
-        self.board: List[List[Optional[CheckersGamePiece]]] = [[None for _ in range(board_length)] for _ in
-                                                               range(board_height)]
+        self.board: List[List[Optional[CheckersGamePiece]]] = [[None for _ in range(board_height)] for _ in
+                                                               range(board_length)]
 
     def check_if_coordinates_are_on_board(self, coordinates: Tuple[int, int]):
-        if not (0 <= coordinates[ROW_INDEX] < self.length and 0 <= coordinates[COLUMN_INDEX] < self.height):
+        if not (0 <= coordinates[ROW_INDEX] < self.height and 0 <= coordinates[COLUMN_INDEX] < self.length):
             raise OutOfBoardException()
 
     def __getitem__(self, item: tuple):
@@ -103,8 +103,8 @@ class CheckerBoard(Board):
 
 @dataclass
 class BoardPresetDataclass:
-    height: int
     length: int
+    height: int
     white_coordinates: List[Tuple[int, int]]
     black_coordinates: List[Tuple[int, int]]
 
