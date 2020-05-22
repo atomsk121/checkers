@@ -76,7 +76,6 @@ class CheckerBoard(Board):
         self.active_pieces[(coordinates[COLUMN_INDEX], coordinates[ROW_INDEX])] = team
 
     def set_up_pieces(self, white_coordinates: List[tuple], black_coordinates: List[Tuple]):
-        # TODO List Comprension
         for coordinates in white_coordinates:
             self._create_piece(coordinates, TeamEnum.white)
         for coordinates in black_coordinates:
