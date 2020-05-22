@@ -176,7 +176,7 @@ class TestEndGame(unittest.TestCase):
         test_game = CheckersGame(CheckerBoardFactory.build_board_from_preset(CheckerBoardTestPresets.simple_tie_test_board))
         test_game.board.set_up_pieces([], [(5, 5)])
         test_game.switch_team_turn()
-        self.assertEqual(test_game.end_game().value, 'Incomplete game')
+        self.assertEqual(test_game.end_game().value, 'incomplete game')
 
 
 class TestFullGames(unittest.TestCase):
@@ -201,6 +201,12 @@ class TestFullGames(unittest.TestCase):
             test_game.make_move(move)
         self.assertEqual(test_game.end_game().value, 'incomplete game')
 
+class TestRunGame(unittest.TestCase):
+    def test_empty_iterator(self):
+        test_board = CheckerBoardFactory.build_board_from_preset(CheckerBoardPresets.standard_8_by_8)
+        test_game = CheckersGame(test_board)
+        move_iterator = create_move_iterator_from_list_of_lists([])
+        print(test_game.run_game(move_iterator))
 
 if __name__ == '__main__':
     unittest.main()

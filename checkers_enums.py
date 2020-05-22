@@ -18,6 +18,7 @@ class GameStatusEnum(Enum):
     tie_game = "tie game"
     incomplete_game = "incomplete game"
     illegal_move = 'illegal move'
+    no_moves_provided = 'No moves provided'
 
 
 ROW_INDEX = 1

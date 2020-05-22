@@ -61,7 +61,6 @@ class CheckersGame:
     def verify_source_is_correct_color(self, move: CheckersMove, team: TeamEnum) -> bool:
         return self.board[move.source] and self.board[move.source].team is team
 
-
     @staticmethod
     def verify_correct_move_direction(move: CheckersMove, team: TeamEnum) -> bool:
         return (move.target[ROW_INDEX] - move.source[ROW_INDEX]) * team.value > 0
@@ -244,15 +243,21 @@ class CheckersGame:
                 return GameStatusEnum.black_wins
 
     def run_game(self, move_iterator: Iterator) -> str:
-        ind = 0
-        move = CheckersMove([0,0,0,0])
+        ind = -1
         try:
+            try:
+                move = next(move_iterator)
+                self.make_move(move)
+            except StopIteration:
+                return 'No moves loaded'
             for ind, move in enumerate(move_iterator):
                 self.make_move(move)
             self.end_game()
         except IllegalMoveException:
             self.game_status = GameStatusEnum.illegal_move
-        finally:
-            if self.game_status == GameStatusEnum.illegal_move:
+        if ind == -1:
+            return 'No moves loead'
+        if self.game_status == GameStatusEnum.illegal_move:
+            if ind > -1:
                 return f'line {ind+1} illegal move: {move.source[COLUMN_INDEX]},{move.source[ROW_INDEX]},{move.target[COLUMN_INDEX]},{move.target[ROW_INDEX]},'
-            return self.game_status.value
+        return self.game_status.value
