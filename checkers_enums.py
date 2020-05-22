@@ -12,11 +12,12 @@ class TeamEnum(Enum):
     black = -1
 
 class GameStatusEnum(Enum):
-    game_continues = "game_continues"
-    white_wins = "white_wins"
-    black_wins = "black_wins"
-    tie_game = "tie_game"
-    illegal_move = 'illegal_move'
+    game_continues = "game continues"
+    white_wins = "first"
+    black_wins = "second"
+    tie_game = "tie game"
+    incomplete_game = "Incomplete game"
+    illegal_move = 'illegal move'
 
 
 ROW_INDEX = 1

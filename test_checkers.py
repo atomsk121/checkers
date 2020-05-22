@@ -2,7 +2,7 @@ import unittest
 
 from checkers_game import CheckersGame
 from checkersmove import CheckersMove, IllegalMoveException
-from move_loader import create_move_iterator_from_list_of_lists
+from move_loader import create_move_iterator_from_list_of_lists, create_move_iterator_from_move_file
 from board import Board, MissingGamePieceException, BoardTileOccupiedException, \
     OutOfBoardException, CheckerBoardPresets, CheckerBoardFactory
 from checkers_enums import TeamEnum
@@ -113,6 +113,53 @@ class TestMoveLoader(unittest.TestCase):
         for move in create_move_iterator_from_list_of_lists(list_of_moves):
             test_game.make_move(move)
 
+class TestGames(unittest.TestCase):
+    def test_move_iterator_from_path(self):
+        #TODO Make smaller test
+        move_iterator = create_move_iterator_from_move_file('white.txt')
+        test_game = CheckersGame(CheckerBoardFactory.build_board_from_preset(CheckerBoardPresets.standard_8_by_8))
+        # try:
+        for move in move_iterator:
+            test_game.make_move(move)
+        # except IllegalMoveException:
+        #     print(move)
+        self.assertEqual(test_game.end_game().value, 'first')
+
+    def test_white_wins_game(self):
+        move_iterator = create_move_iterator_from_move_file('white.txt')
+        test_game = CheckersGame(CheckerBoardFactory.build_board_from_preset(CheckerBoardPresets.standard_8_by_8))
+        # try:
+        for move in move_iterator:
+            test_game.make_move(move)
+        # except IllegalMoveException:
+        #     print(move)
+        self.assertEqual(test_game.end_game().value, 'first')
+
+    def test_black_wins_game(self):
+        move_iterator = create_move_iterator_from_move_file('black.txt')
+        test_game = CheckersGame(CheckerBoardFactory.build_board_from_preset(CheckerBoardPresets.standard_8_by_8))
+        # try:
+        for ind, move in enumerate(move_iterator):
+            test_game.make_move(move)
+        # except IllegalMoveException:
+        #     print(move)
+        self.assertEqual(test_game.end_game().value, 'second')
+
+    def test_tie(self):
+        #TODO Test better tie game?
+        test_game = CheckersGame(CheckerBoardFactory.build_board_from_preset(CheckerBoardPresets.simple_tie_test_board))
+        self.assertEqual(test_game.end_game().value, 'tie game')
+
+    def test_incomplete_game(self):
+        #TODO Better incomplete test
+        move_iterator = create_move_iterator_from_move_file('incomplete.txt')
+        test_game = CheckersGame(CheckerBoardFactory.build_board_from_preset(CheckerBoardPresets.standard_8_by_8))
+        # try:
+        for ind, move in enumerate(move_iterator):
+            test_game.make_move(move)
+        # except IllegalMoveException:
+        #     print(move)
+        self.assertEqual(test_game.end_game().value, 'Incomplete game')
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Tuple, Dict
 
 from game_pieces import CheckersGamePiece
-from checkers_enums import TeamEnum, COLUMN_INDEX, ROW_INDEX
+from checkers_enums import TeamEnum, ROW_INDEX, COLUMN_INDEX
 
 
 class BoardException(Exception):
@@ -29,11 +29,11 @@ class Board:
                                                                range(board_height)]
 
     def check_if_coordinates_are_on_board(self, coordinates: Tuple[int, int]):
-        if not (0 <= coordinates[COLUMN_INDEX] < self.length and 0 <= coordinates[ROW_INDEX] < self.height):
+        if not (0 <= coordinates[ROW_INDEX] < self.length and 0 <= coordinates[COLUMN_INDEX] < self.height):
             raise OutOfBoardException()
 
     def __getitem__(self, item: tuple):
-        return self.board[item[ROW_INDEX]][item[COLUMN_INDEX]]
+        return self.board[item[COLUMN_INDEX]][item[ROW_INDEX]]
 
 
 class CheckerBoard(Board):
@@ -42,25 +42,25 @@ class CheckerBoard(Board):
         self.active_pieces = {}
 
     def remove_piece(self, coordinates: Tuple[int, int]):
-        self.board[coordinates[ROW_INDEX]][coordinates[COLUMN_INDEX]] = None
-        self.active_pieces.pop(coordinates[ROW_INDEX], coordinates[COLUMN_INDEX])
+        self.board[coordinates[COLUMN_INDEX]][coordinates[ROW_INDEX]] = None
+        self.active_pieces.pop((coordinates[COLUMN_INDEX], coordinates[ROW_INDEX]))
 
     def verify_game_piece_can_be_moved(self, source: Tuple[int, int], target: Tuple[int, int]):
         self.check_if_coordinates_are_on_board(source)
         self.check_if_coordinates_are_on_board(target)
-        if self.board[source[ROW_INDEX]][source[COLUMN_INDEX]] is None:
+        if self.board[source[COLUMN_INDEX]][source[ROW_INDEX]] is None:
             raise MissingGamePieceException()
-        if self.board[target[ROW_INDEX]][target[COLUMN_INDEX]]:
+        if self.board[target[COLUMN_INDEX]][target[ROW_INDEX]]:
             raise BoardTileOccupiedException()
 
     def verify_game_piece_can_be_captured(self, coordinates: Tuple[int, int]):
-        if self.board[coordinates[ROW_INDEX]][coordinates[COLUMN_INDEX]] is None:
+        if self.board[coordinates[COLUMN_INDEX]][coordinates[ROW_INDEX]] is None:
             raise MissingGamePieceException()
 
     def move_piece(self, source: Tuple[int, int], target: Tuple[int, int]):
         self.verify_game_piece_can_be_moved(source, target)
-        self.board[target[ROW_INDEX]][target[COLUMN_INDEX]] = self.board[source[ROW_INDEX]][source[COLUMN_INDEX]]
-        self.active_pieces[target[ROW_INDEX], target[COLUMN_INDEX]] = self.board[source[ROW_INDEX]][source[COLUMN_INDEX]].team
+        self.board[target[COLUMN_INDEX]][target[ROW_INDEX]] = self.board[source[COLUMN_INDEX]][source[ROW_INDEX]]
+        self.active_pieces[(target[COLUMN_INDEX], target[ROW_INDEX])] = self.board[source[COLUMN_INDEX]][source[ROW_INDEX]].team
         self.remove_piece(source)
 
     def capture_piece(self, source: Tuple[int, int], target: Tuple[int, int],
@@ -72,8 +72,8 @@ class CheckerBoard(Board):
 
     def _create_piece(self, coordinates: Tuple[int, int], team: TeamEnum):
         self.check_if_coordinates_are_on_board(coordinates)
-        self.board[coordinates[ROW_INDEX]][coordinates[COLUMN_INDEX]] = CheckersGamePiece(team)
-        self.active_pieces[coordinates[ROW_INDEX], coordinates[COLUMN_INDEX]] = team
+        self.board[coordinates[COLUMN_INDEX]][coordinates[ROW_INDEX]] = CheckersGamePiece(team)
+        self.active_pieces[(coordinates[COLUMN_INDEX], coordinates[ROW_INDEX])] = team
 
     def set_up_pieces(self, white_coordinates: List[tuple], black_coordinates: List[Tuple]):
         # TODO List Comprension
@@ -82,9 +82,23 @@ class CheckerBoard(Board):
         for coordinates in black_coordinates:
             self._create_piece(coordinates, TeamEnum.black)
 
-    def print_board(self):
-        for row in self.board:
-            print(row)
+    def __str__(self):
+        board_rep = ''
+        for i in range(self.length-1,-1,-1):
+            for j in range(self.height-1,-1,-1):
+                if self[j,i] is None:
+                    board_rep += '_'
+                else:
+                    board_rep += self[j,i].team.name[0]
+            board_rep += '\n'
+        return board_rep
+
+    @property
+    def score(self)-> Dict:
+        scores = {TeamEnum.white: 0, TeamEnum.black: 0}
+        for team in self.active_pieces.values():
+            scores[team] += 1
+        return scores
 
 
 @dataclass
@@ -97,13 +111,10 @@ class BoardPresetDataclass:
 
 class CheckerBoardPresets:
     standard_8_by_8 = BoardPresetDataclass(8, 8,
-                                           [(1, 0), (3, 0), (5, 0), (7, 0),
-                                            (0, 1), (2, 1), (4, 1), (6, 1),
-                                            (1, 2), (3, 2), (5, 2), (7, 2)],
-                                           [(0, 5), (2, 5), (4, 5), (6, 5),
-                                            (1, 6), (3, 6), (5, 6), (7, 6),
-                                            (0, 7), (2, 7), (4, 7), (6, 7)])
-    multi_capture_test_board_8_by_8 = BoardPresetDataclass(8, 8, [(0, 0)], [(1, 1), (3, 3)])
+                                           [(i, j) for i in range(8) for j in range(3) if (i+j)%2 == 1],
+                                           [(i, j) for i in range(8) for j in range(5, 8) if (i+j)%2 == 1])
+    multi_capture_test_board_8_by_8 = BoardPresetDataclass(8, 8, [(0, 0)], [(1, 1), (3, 3)]) #TODO Move to test directory
+    simple_tie_test_board = BoardPresetDataclass(8, 8, [(0, 7)], [(1, 0)]) #TODO Move to test directory
 
 
 class CheckerBoardFactory:

@@ -17,6 +17,7 @@ class CheckersGame:
         self.other_team = self.SECOND_TURN
         self.possible_capture_moves: Dict[TeamEnum, List[CheckersMove]] = {TeamEnum.white: [], TeamEnum.black: []}
         self.multiple_capture_possibilities = []
+        self.record_pieces_that_can_capture()
 
     def switch_team_turn(self):
         if self.current_team == TeamEnum.white:
@@ -36,11 +37,11 @@ class CheckersGame:
 
     def is_move_inside_board(self, move: CheckersMove) -> bool:
         # todo check dimensions
-        if not (0 < move.source[0] < self.board.height) or not (0 < move.source[1] < self.board.length):
-            return False
-        if not (0 < move.target[0] < self.board.height) or not (0 < move.target[1] < self.board.length):
-            return False
-        return True
+        if not ((0 <= move.source[ROW_INDEX] < self.board.height) and (0 <= move.source[COLUMN_INDEX] < self.board.length)):
+            return True
+        if not ((0 <= move.target[ROW_INDEX] < self.board.height) and (0 <= move.target[COLUMN_INDEX] < self.board.length)):
+            return True
+        return False
 
     def find_move_type(self, move: CheckersMove) -> MoveTypeEnum:
         if abs(move.source[1] - move.target[1]) == 1:
@@ -71,25 +72,25 @@ class CheckersGame:
 
     @staticmethod
     def get_coordinates_for_piece_to_capture(move: CheckersMove, team: TeamEnum):
-        coordinates = move.source[ROW_INDEX] + team.value, \
-                      int((move.target[COLUMN_INDEX] + move.source[COLUMN_INDEX]) / 2)
+        coordinates = int((move.target[COLUMN_INDEX] + move.source[COLUMN_INDEX]) / 2), \
+                      move.source[ROW_INDEX] + team.value
 
         return coordinates
 
     def check_if_there_is_a_piece_to_capture(self, move, team: TeamEnum):
         coordinates = self.get_coordinates_for_piece_to_capture(move, team)
-        if not self.board[coordinates[ROW_INDEX], coordinates[COLUMN_INDEX]] or \
-                self.board[coordinates[ROW_INDEX], coordinates[COLUMN_INDEX]] == team:
+        if not self.board[coordinates[COLUMN_INDEX], coordinates[ROW_INDEX]] or \
+                self.board[coordinates[COLUMN_INDEX], coordinates[ROW_INDEX]].team == team:
             return False
         return True
 
     def check_if_move_is_valid(self, move: CheckersMove, team: TeamEnum = None):
         if team is None:
             team = self.current_team
-        # if self.is_move_inside_board(move):
-        #     raise IllegalMoveException()
-        # if not self.check_if_target_is_empty(move):
-        #     raise IllegalMoveException()
+        if self.is_move_inside_board(move):
+            raise IllegalMoveException()
+        if not self.check_if_target_is_empty(move):
+            raise IllegalMoveException()
         if not self.check_if_source_is_correct_color(move, team):
             raise IllegalMoveException()
         if not self.check_move_is_diagonal(move):
@@ -106,17 +107,17 @@ class CheckersGame:
         for team in [TeamEnum.white, TeamEnum.black]:
             raw_move_list = [[coordinates[COLUMN_INDEX] + 2,
                               coordinates[ROW_INDEX] - 2 * team.value,
-                              coordinates[COLUMN_INDEX] - 2,
+                              coordinates[COLUMN_INDEX],
                               coordinates[ROW_INDEX],
                               ],
                              [coordinates[COLUMN_INDEX] - 2,
                               coordinates[ROW_INDEX] - 2 * team.value,
-                              coordinates[COLUMN_INDEX] + 2,
+                              coordinates[COLUMN_INDEX],
                               coordinates[ROW_INDEX],
                               ]
                              ]
             for potential_move in create_move_iterator_from_list_of_lists(raw_move_list):
-                if self.verify_legal_capture(potential_move, team):
+                if self.verify_legal_move(potential_move, team):
                     self.possible_capture_moves[team].append(potential_move)
 
     def find_possible_capture_moves_as_a_result_of_placed_piece_for_other_team(self, move: CheckersMove):
@@ -132,14 +133,14 @@ class CheckersGame:
                           ],
                          ]
         for potential_move in create_move_iterator_from_list_of_lists(raw_move_list):
-            if self.verify_legal_capture(potential_move, self.other_team):
+            if self.verify_legal_move(potential_move, self.other_team):
                 self.possible_capture_moves[self.other_team].append(potential_move)
 
-    def add_multi_capture_moves_as_a_result_of_placed_piece_for_current_team(self, move: CheckersMove):
+    def add_capture_moves_as_a_result_of_placed_piece_for_current_team(self, move: CheckersMove):
         raw_move_list = [[move.target[COLUMN_INDEX],
                           move.target[ROW_INDEX],
                           move.target[COLUMN_INDEX] + 2,
-                          move.target[ROW_INDEX] + 2,
+                          move.target[ROW_INDEX] + 2 * self.current_team.value,
                           ],
                          [move.target[COLUMN_INDEX],
                           move.target[ROW_INDEX],
@@ -148,12 +149,12 @@ class CheckersGame:
                           ],
                          ]
         for potential_move in create_move_iterator_from_list_of_lists(raw_move_list):
-            if self.verify_legal_capture(potential_move, self.current_team):
+            if self.verify_legal_move(potential_move, self.current_team):
                 if self.find_move_type(move) == MoveTypeEnum.capture:
                     self.multiple_capture_possibilities.append(potential_move)
                 self.possible_capture_moves[self.current_team].append(potential_move)
 
-    def verify_legal_capture(self, move: CheckersMove, team: TeamEnum):
+    def verify_legal_move(self, move: CheckersMove, team: TeamEnum):
         try:
             self.check_if_move_is_valid(move, team)
             return True
@@ -161,7 +162,7 @@ class CheckersGame:
             return False
 
     def add_all_possible_captures_as_result_of_move(self, move: CheckersMove):
-        self.add_multi_capture_moves_as_a_result_of_placed_piece_for_current_team(move)
+        self.add_capture_moves_as_a_result_of_placed_piece_for_current_team(move)
         self.find_possible_capture_moves_as_a_result_of_placed_piece_for_other_team(move)
         self.find_possible_capture_moves_as_a_result_of_removed_piece(move.source)
         if self.find_move_type(move) == MoveTypeEnum.capture:
@@ -177,12 +178,12 @@ class CheckersGame:
 
     def remove_illegal_moves_from_immediate_and_possible_capture_moves(self):
         for move in self.multiple_capture_possibilities:
-            if not self.verify_legal_capture(move, self.current_team):
+            if not self.verify_legal_move(move, self.current_team):
                 self.multiple_capture_possibilities.remove(move)
-        for team, move_set in self.possible_capture_moves.items():
-            for move in move_set:
-                if not self.verify_legal_capture(move, team):
-                    move_set.remove(move)
+        for team, move_list in self.possible_capture_moves.items():
+            for move in move_list.copy():
+                if not self.verify_legal_move(move, team):
+                    move_list.remove(move)
 
     def make_move(self, move: CheckersMove):
         self.check_if_move_is_valid(move)
@@ -202,12 +203,43 @@ class CheckersGame:
         if not self.multiple_capture_possibilities:
             self.switch_team_turn()
 
-    def check_if_piece_can_move_regularly(self, coordinates: Tuple[int, int]) -> bool:
-        team = self.board[coordinates[ROW_INDEX], coordinates[COLUMN_INDEX]].team
-        possible_moves = [[coordinates[COLUMN_INDEX], coordinates[ROW_INDEX], coordinates]]
+    def check_if_piece_can_move(self, coordinates: Tuple[int, int]) -> bool:
+        team = self.board[coordinates[COLUMN_INDEX], coordinates[ROW_INDEX]].team
+        possible_moves = [[coordinates[COLUMN_INDEX], coordinates[ROW_INDEX], coordinates[COLUMN_INDEX] + 1, coordinates[ROW_INDEX]+team.value],
+                          [coordinates[COLUMN_INDEX], coordinates[ROW_INDEX], coordinates[COLUMN_INDEX] - 1, coordinates[ROW_INDEX]+team.value],
+                          [coordinates[COLUMN_INDEX], coordinates[ROW_INDEX], coordinates[COLUMN_INDEX] + 2, coordinates[ROW_INDEX]+team.value*2],
+                          [coordinates[COLUMN_INDEX], coordinates[ROW_INDEX], coordinates[COLUMN_INDEX] - 2, coordinates[ROW_INDEX]+team.value*2]]
+        for move in create_move_iterator_from_list_of_lists(possible_moves):
+            if self.verify_legal_move(move, team):
+                return True
+        else:
+            return False
 
-    def end_game(self):
-        pass
+    def record_pieces_that_can_capture(self):
+        #TODO TEST THIS
+        for coordinates in self.board.active_pieces:
+            team = self.board[coordinates[COLUMN_INDEX], coordinates[ROW_INDEX]].team
+            possible_moves = [[coordinates[COLUMN_INDEX], coordinates[ROW_INDEX], coordinates[COLUMN_INDEX] + 2, coordinates[ROW_INDEX]+team.value*2],
+                              [coordinates[COLUMN_INDEX], coordinates[ROW_INDEX], coordinates[COLUMN_INDEX] - 2, coordinates[ROW_INDEX]+team.value*2]]
+            for move in create_move_iterator_from_list_of_lists(possible_moves):
+                if self.verify_legal_move(move, team):
+                    self.possible_capture_moves[team].append(move)
+
+    def end_game(self) -> GameStatusEnum:
+        for coordinates, team in self.board.active_pieces.items():
+            if team == self.current_team:
+                if self.check_if_piece_can_move(coordinates):
+                    return GameStatusEnum.incomplete_game
+        else:
+            white_score = self.board.score[TeamEnum.white]
+            black_score = self.board.score[TeamEnum.black]
+            if white_score == black_score:
+                return GameStatusEnum.tie_game
+            elif white_score > black_score:
+                return GameStatusEnum.white_wins
+            else:
+                return GameStatusEnum.black_wins
+
 
 
 if __name__ == '__main__':

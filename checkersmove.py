@@ -14,6 +14,9 @@ class CheckersMove:
     def __hash__(self):
         return hash(f"source {self.source} target {self.target}")
 
+    def __str__(self):
+        return f'{self.source}, {self.target}'
+
 
 
 class IllegalMoveException(Exception):
