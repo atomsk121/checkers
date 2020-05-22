@@ -114,6 +114,7 @@ class CheckerBoardPresets:
                                            [(i, j) for i in range(8) for j in range(5, 8) if (i+j)%2 == 1])
     multi_capture_test_board_8_by_8 = BoardPresetDataclass(8, 8, [(0, 0)], [(1, 1), (3, 3)]) #TODO Move to test directory
     simple_tie_test_board = BoardPresetDataclass(8, 8, [(0, 7)], [(1, 0)]) #TODO Move to test directory
+    test_capture_board = BoardPresetDataclass(8, 8, [(3, 2), (0, 1), (7, 0)], [(4, 3), (2, 3), (6, 1)]) #TODO Move to test directory
 
 
 class CheckerBoardFactory:

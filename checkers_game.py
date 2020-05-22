@@ -85,7 +85,7 @@ class CheckersGame:
             return False
         return True
 
-    def check_if_move_is_valid(self, move: CheckersMove, team: TeamEnum = None):
+    def verify_move_is_valid(self, move: CheckersMove, team: TeamEnum = None):
         if team is None:
             team = self.current_team
         if not self.is_move_inside_board(move):
@@ -157,7 +157,7 @@ class CheckersGame:
 
     def verify_legal_move(self, move: CheckersMove, team: TeamEnum):
         try:
-            self.check_if_move_is_valid(move, team)
+            self.verify_move_is_valid(move, team)
             return True
         except IllegalMoveException:
             return False
@@ -187,7 +187,7 @@ class CheckersGame:
                     move_list.remove(move)
 
     def make_move(self, move: CheckersMove):
-        self.check_if_move_is_valid(move)
+        self.verify_move_is_valid(move)
         self.check_if_move_is_one_of_available_captures(move)
         try:
             if self.find_move_type(move) == MoveTypeEnum.regular_move:
@@ -217,7 +217,6 @@ class CheckersGame:
             return False
 
     def scan_and_record_pieces_that_can_capture(self):
-        #TODO TEST THIS
         for coordinates in self.board.active_pieces:
             team = self.board[coordinates[COLUMN_INDEX], coordinates[ROW_INDEX]].team
             possible_moves = [[coordinates[COLUMN_INDEX], coordinates[ROW_INDEX], coordinates[COLUMN_INDEX] + 2, coordinates[ROW_INDEX]+team.value*2],
