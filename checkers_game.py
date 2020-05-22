@@ -161,6 +161,23 @@ class CheckersGame:
             return False
 
     def add_all_possible_captures_as_result_of_move(self, move: CheckersMove):
+        '''
+        Capture Logic:
+        There are two situations where a capture can be made available.
+            1: Placement of piece: A piece is placed on a new tile: This is split into possible captures from the two teams:
+                'active' team: If regular move then a possible capture would be diagonally in two directions
+                (Assuming the move is valid). If the placement is a result of a capture and another capture is available
+                then the next capture MUST be made by the same team. The possible captures are added to self.possible_captures,
+                as well as self.multiple_capture_possibilities.
+                'passive' team: The placed piece might be captured from either side. Although it is technically impossible
+                to capture in the same direction that the active piece came from, it is computationally cheap to add it
+                and remove it in the validity check.
+            2: Removal of piece: A piece is removed from a tile either through a regular move, or when it is captured.
+                The options here is that the captured piece's coordinates become the target of a capture move. There are 4
+                directions in which this can be checked.
+        :param move:
+        :return:
+        '''
         self.add_capture_moves_as_a_result_of_placed_piece_for_current_team(move)
         self.find_possible_capture_moves_as_a_result_of_placed_piece_for_other_team(move)
         self.find_possible_capture_moves_as_a_result_of_removed_piece(move.source)
@@ -199,7 +216,7 @@ class CheckersGame:
             raise IllegalMoveException()
         self.add_all_possible_captures_as_result_of_move(move)
         self.remove_illegal_moves_from_immediate_and_possible_capture_moves()
-        if not self.multiple_capture_possibilities:
+        if not self.multiple_capture_possibilities: #Switch teams only if there is no multiple capture possibility
             self.switch_team_turn()
 
     def check_if_piece_can_move(self, coordinates: Tuple[int, int]) -> bool:
