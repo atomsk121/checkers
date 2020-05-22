@@ -16,7 +16,7 @@ class GameStatusEnum(Enum):
     white_wins = "first"
     black_wins = "second"
     tie_game = "tie game"
-    incomplete_game = "Incomplete game"
+    incomplete_game = "incomplete game"
     illegal_move = 'illegal move'
 
 

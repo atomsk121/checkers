@@ -228,17 +228,34 @@ class CheckersGame:
         for coordinates, team in self.board.active_pieces.items():
             if team == self.current_team:
                 if self.check_if_piece_can_move(coordinates):
+                    self.game_status = GameStatusEnum.incomplete_game
                     return GameStatusEnum.incomplete_game
         else:
             white_score = self.board.score[TeamEnum.white]
             black_score = self.board.score[TeamEnum.black]
             if white_score == black_score:
+                self.game_status = GameStatusEnum.tie_game
                 return GameStatusEnum.tie_game
             elif white_score > black_score:
+                self.game_status = GameStatusEnum.white_wins
                 return GameStatusEnum.white_wins
             else:
+                self.game_status = GameStatusEnum.black_wins
                 return GameStatusEnum.black_wins
 
+    def run_game(self, move_iterator: Iterator):
+        ind = 0
+        move = CheckersMove([0,0,0,0])
+        try:
+            for ind, move in enumerate(move_iterator):
+                self.make_move(move)
+            self.end_game()
+        except IllegalMoveException:
+            self.game_status = GameStatusEnum.illegal_move
+        finally:
+            if self.game_status == GameStatusEnum.illegal_move:
+                return f'line {ind+1} illegal move: {move.source[COLUMN_INDEX]},{move.source[ROW_INDEX]},{move.target[COLUMN_INDEX]},{move.target[ROW_INDEX]},'
+            return self.game_status.value
 
 
 if __name__ == '__main__':

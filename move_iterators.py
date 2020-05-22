@@ -2,7 +2,6 @@ from typing import Iterator, List
 
 from checkersmove import CheckersMove, IllegalMoveException
 
-
 def create_move_iterator_from_move_file(path: str) -> Iterator[CheckersMove]:
     with open(path, 'r') as file:
         for line in file:
