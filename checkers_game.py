@@ -256,7 +256,3 @@ class CheckersGame:
             if self.game_status == GameStatusEnum.illegal_move:
                 return f'line {ind+1} illegal move: {move.source[COLUMN_INDEX]},{move.source[ROW_INDEX]},{move.target[COLUMN_INDEX]},{move.target[ROW_INDEX]},'
             return self.game_status.value
-
-
-if __name__ == '__main__':
-    print(len(Board(8, 8).board[0]))
