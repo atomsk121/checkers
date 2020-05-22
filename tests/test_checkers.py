@@ -199,7 +199,7 @@ class TestFullGames(unittest.TestCase):
         test_game = CheckersGame(CheckerBoardFactory.build_board_from_preset(CheckerBoardPresets.standard_8_by_8))
         for ind, move in enumerate(move_iterator):
             test_game.make_move(move)
-        self.assertEqual(test_game.end_game().value, 'Incomplete game')
+        self.assertEqual(test_game.end_game().value, 'incomplete game')
 
 
 if __name__ == '__main__':

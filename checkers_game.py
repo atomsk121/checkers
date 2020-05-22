@@ -52,7 +52,7 @@ class CheckersGame:
         return MoveTypeEnum.illegal_move
 
     @staticmethod
-    def verify_move_is_diagonal(move: CheckersMove):
+    def verify_move_is_diagonal(move: CheckersMove) -> bool:
         return abs(move.source[1] - move.target[1]) == abs(move.source[0] - move.target[0])
 
     def verify_target_is_empty(self, move: CheckersMove) -> bool:
@@ -63,21 +63,21 @@ class CheckersGame:
 
 
     @staticmethod
-    def verify_correct_move_direction(move: CheckersMove, team: TeamEnum):
+    def verify_correct_move_direction(move: CheckersMove, team: TeamEnum) -> bool:
         return (move.target[ROW_INDEX] - move.source[ROW_INDEX]) * team.value > 0
 
     @staticmethod
-    def verify_move_distance_is_valid(move: CheckersMove):
+    def verify_move_distance_is_valid(move: CheckersMove) -> bool:
         return abs(move.target[ROW_INDEX] - move.source[ROW_INDEX]) <= 2
 
     @staticmethod
-    def get_coordinates_for_piece_to_capture(move: CheckersMove, team: TeamEnum):
+    def get_coordinates_for_piece_to_capture(move: CheckersMove, team: TeamEnum) -> Tuple[int, int]:
         coordinates = int((move.target[COLUMN_INDEX] + move.source[COLUMN_INDEX]) / 2), \
                       move.source[ROW_INDEX] + team.value
 
         return coordinates
 
-    def check_if_there_is_a_piece_to_capture(self, move, team: TeamEnum):
+    def check_if_there_is_a_piece_to_capture(self, move, team: TeamEnum) -> bool:
         coordinates = self.get_coordinates_for_piece_to_capture(move, team)
         if not self.board[coordinates[COLUMN_INDEX], coordinates[ROW_INDEX]] or \
                 self.board[coordinates[COLUMN_INDEX], coordinates[ROW_INDEX]].team == team:
@@ -154,7 +154,7 @@ class CheckersGame:
                     self.multiple_capture_possibilities.append(potential_move)
                 self.possible_capture_moves[self.current_team].append(potential_move)
 
-    def verify_legal_move(self, move: CheckersMove, team: TeamEnum):
+    def verify_legal_move(self, move: CheckersMove, team: TeamEnum) -> bool:
         try:
             self.verify_move_is_valid(move, team)
             return True
@@ -243,7 +243,7 @@ class CheckersGame:
                 self.game_status = GameStatusEnum.black_wins
                 return GameStatusEnum.black_wins
 
-    def run_game(self, move_iterator: Iterator):
+    def run_game(self, move_iterator: Iterator) -> str:
         ind = 0
         move = CheckersMove([0,0,0,0])
         try:
