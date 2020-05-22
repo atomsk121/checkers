@@ -62,3 +62,6 @@ class TestCheckerMove(unittest.TestCase):
                           TeamEnum.white)
         self.assertRaises(IllegalMoveException, test_game2.verify_move_is_valid, CheckersMove([5, 6, 3, 4]),
                           TeamEnum.white)
+
+if __name__ == '__main__':
+    unittest.main()

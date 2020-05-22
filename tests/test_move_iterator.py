@@ -22,3 +22,6 @@ class TestMoveIterator(unittest.TestCase):
         move_iterator = create_move_iterator_from_move_file('games/white.txt')
         self.assertEqual(next(move_iterator), CheckersMove([1, 2, 0, 3]))
         self.assertEqual(next(move_iterator), CheckersMove([4, 5, 3, 4]))
+
+if __name__ == '__main__':
+    unittest.main()

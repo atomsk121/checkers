@@ -71,3 +71,6 @@ class TestVerifiers(unittest.TestCase):
         self.assertFalse(test_game.verify_correct_move_direction(CheckersMove([2, 1, 4, 3]), TeamEnum.black))
         self.assertTrue(test_game.verify_correct_move_direction(CheckersMove([2, 3, 0, 1]), TeamEnum.black))
         self.assertFalse(test_game.verify_correct_move_direction(CheckersMove([2, 3, 0, 1]), TeamEnum.white))
+
+if __name__ == '__main__':
+    unittest.main()

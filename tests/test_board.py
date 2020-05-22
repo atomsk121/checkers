@@ -78,3 +78,6 @@ class TestBoardMoves(unittest.TestCase):
         test_board.move_piece(CheckersMove([2, 2, 4, 11]).source, CheckersMove([2, 2, 4, 11]).target)
         self.assertRaises(OutOfBoardException, test_board.move_piece, CheckersMove([4, 11, 11, 11]).source,
                           CheckersMove([4, 11, 11, 11]).target)
+
+if __name__ == '__main__':
+    unittest.main()
