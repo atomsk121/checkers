@@ -3,7 +3,7 @@ from typing import Type, Iterator, Tuple, Dict, List
 from checkersmove import CheckersMove, IllegalMoveException
 from board import Board, BoardException, CheckerBoard
 from checkers_enums import MoveTypeEnum, TeamEnum, GameStatusEnum, COLUMN_INDEX, ROW_INDEX
-from move_loader import create_move_iterator_from_list_of_lists
+from move_iterators import create_move_iterator_from_list_of_lists
 
 
 class CheckersGame:
@@ -11,7 +11,7 @@ class CheckersGame:
     SECOND_TURN = TeamEnum.black
 
     def __init__(self, board: CheckerBoard, skip_scan_for_pieces_that_can_capture: bool=False):
-        self.board = board #TODO CHECK IF PRESET BOARD HAS PIECES THAT CAN BE CAPTURED
+        self.board = board
         self.game_status = GameStatusEnum.game_continues
         self.current_team = self.FIRST_TURN
         self.other_team = self.SECOND_TURN
@@ -68,7 +68,6 @@ class CheckersGame:
 
     @staticmethod
     def verify_move_distance_is_valid(move: CheckersMove):
-        #TODO ADD TESTS FROM HERE
         return abs(move.target[ROW_INDEX] - move.source[ROW_INDEX]) <= 2
 
     @staticmethod

@@ -1,4 +1,4 @@
-from move_loader import create_move_iterator_from_move_file
+from move_iterators import create_move_iterator_from_move_file
 
 
 def main():
